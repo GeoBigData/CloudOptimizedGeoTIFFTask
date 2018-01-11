@@ -1,0 +1,9 @@
+version: '2'
+services:
+  geotiff-test:
+    image: "gbdx:cloud-optimized-geotiff"
+    volumes:
+      - ./test-data/input:/mnt/work/input:rw
+      - ./test-data/output:/mnt/work/output:rw
+      - .:/src:rw
+    command: 'python cloud-optimized-geotiff-task.py'
