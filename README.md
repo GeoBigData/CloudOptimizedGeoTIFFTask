@@ -10,7 +10,7 @@ This task creates a Cloud Optimized GeoTIFF from a standard GeoTIFF input image.
 # Build Docker Image
 
 ```bash
-docker build -t gbdx:cloud-optimized-geotiff -f Dockerfile .
+docker build -t cloud-optimized-geotiff:0.1.3 -f Dockerfile .
 ```
 
 # Publish Docker Image

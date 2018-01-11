@@ -1,7 +1,7 @@
 version: '2'
 services:
-  geotiff-test:
-    image: "gbdx:cloud-optimized-geotiff"
+  test:
+    image: "cloud-optimized-geotiff:latest"
     volumes:
       - ./test-data/input:/mnt/work/input:rw
       - ./test-data/output:/mnt/work/output:rw

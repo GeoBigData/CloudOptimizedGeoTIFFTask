@@ -5,89 +5,72 @@ import string
 from validate import validate as validate_geotiff, ValidateCloudOptimizedGeoTIFFException
 import json
 from glob import glob
-
-# Define input/output directories
-in_mnt = '/mnt/work/input'
-in_path = path.join(in_mnt, 'data')
-out_mnt = '/mnt/work/output'
-out_path = path.join(out_mnt, 'data')
-
-if not path.exists(out_path):
-    mkdir(out_path)
-
-# Parse the input ports
-with open(path.join(in_mnt, 'ports.json'), 'r') as ports_json:
-    input_ports = json.load(ports_json)
-
-# Get list of all GeoTIFFs in input directory
-input_images = glob(path.join(in_path, '*.tif'))
-
-# If "images" input is present, filter to only those images
-if 'images' in input_ports.keys() and input_ports['images'] != '':
-    images_filter = input_ports['images'].split(',')
-    input_images = [im for im in input_images if path.basename(im) in images_filter]
+from gbdx_task_interface import GbdxTaskInterface
 
 
-def write_error_log(image, message):
-    """
-    Writes the given error message to a log file in the outputs directory for the specified image.
-    :param image: The ID (no file extension) of the image
-    :param message: The string error message
-    :return: None
-    """
-    log_path = path.join(out_path, '%s.error.log' % path.splitext(image)[0])
-    mode = 'w' if not path.exists(log_path) else 'a'
-    with open(log_path, mode) as error_log:
-        if mode == 'a':
-            error_log.write('\n')
-        error_log.write(message)
+class CloudOptimizedGeoTIFFTask(GbdxTaskInterface):
 
-for in_fp in input_images:
+    @staticmethod
+    def get_band_count(img):
+        cmd = 'gdalinfo {img} | grep "Band \d" | wc -l'.format(img=img)
+        response = check_output(cmd, shell=True)
+        return int(response.strip())
 
-    basename = path.basename(in_fp)
+    def invoke(self):
+        input_images = glob(path.join(self.input_path, '**.tif'))
+        input_images += glob(path.join(self.input_path, '**.TIF'))
 
-    try:
+        for img_fp in input_images:
+            band_count = self.get_band_count(img_fp)
+            basename = path.basename(img_fp)
 
-        # Check for existence of file
-        if not path.exists(in_fp):
-            raise IOError('File %s does not exist in input directory' % basename)
+            try:
 
-        # Construct the filepath for the output optimized GeoTIFF
-        out_fp = path.join(out_path, basename)
+                # Check for existence of file
+                if not path.exists(img_fp):
+                    raise IOError('File %s does not exist in input directory' % basename)
 
-        # Create the raster overview
-        overview_cmd = 'gdaladdo -r average %s 2 4 8 16 32' % in_fp
+                # Construct the filepath for the output optimized GeoTIFF
+                out_fp = path.join(self.output_path, basename)
 
-        # Create the cloud-optimized GeoTIFF
-        optimize_cmd = 'gdal_translate %s \
-                    %s \
-                    -co TILED=YES \
-                    -co COMPRESS=JPEG \
-                    -co PHOTOMETRIC=YCBCR \
-                    -co COPY_SRC_OVERVIEWS=YES' % (in_fp, out_fp)
+                # Create the raster overview
+                overview_cmd = 'gdaladdo -r average %s 2 4 8 16 32' % img_fp
 
-        # Run both commands to create the final Cloud Optimized GeoTIFF
-        full_cmd = string.join([overview_cmd, optimize_cmd], sep='; ')
-        response = check_output(
-            full_cmd,
-            stderr=subprocess.STDOUT,
-            shell=True
-        )
+                # Create the cloud-optimized GeoTIFF
+                options = [
+                    '-co TILED=YES',
+                    '-co COMPRESS=JPEG',
+                    '-co COPY_SRC_OVERVIEWS=YES'
+                ]
+                if band_count == 3:
+                    options.append('-co PHOTOMETRIC=YCBCR')
+                optimize_cmd = 'gdal_translate %s \
+                            %s \
+                            %s' % (img_fp, out_fp, ' '.join(options))
 
-        # Validate the GeoTIFF
-        validate_geotiff(out_fp)
+                # Run both commands to create the final Cloud Optimized GeoTIFF
+                full_cmd = string.join([overview_cmd, optimize_cmd], sep='; ')
+                check_output(
+                    full_cmd,
+                    stderr=subprocess.STDOUT,
+                    shell=True
+                )
 
-    except IOError as e:
-        message = e.message
-        write_error_log(basename, message)
-        continue
+                # Validate the GeoTIFF
+                validate_geotiff(out_fp)
 
-    except CalledProcessError as e:
-        message = 'Failed to create Cloud Optimized GeoTIFF from %s: %s' % (basename, e.output)
-        write_error_log(basename, message)
-        continue
+            except IOError as e:
+                raise Exception(e.message)
 
-    except ValidateCloudOptimizedGeoTIFFException as e:
-        message = '%s is not a valid Cloud Optimized GeoTIFF: %s' % (basename, e.message)
-        write_error_log(basename, message)
-        continue
+            except CalledProcessError as e:
+                message = 'Failed to create Cloud Optimized GeoTIFF from %s: %s' % (basename, e.output)
+                raise Exception(message)
+
+            except ValidateCloudOptimizedGeoTIFFException as e:
+                message = '%s is not a valid Cloud Optimized GeoTIFF: %s' % (basename, e.message)
+                raise Exception(message)
+
+
+if __name__ == '__main__':
+    with CloudOptimizedGeoTIFFTask() as task:
+        task.invoke()
