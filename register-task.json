@@ -34,5 +34,6 @@
     "properties": {
         "isPublic": true,
         "timeout": 36000
-    }
+    },
+    "taskOwnerEmail": "jon.duckworth@digitalglobe.com"
 }
