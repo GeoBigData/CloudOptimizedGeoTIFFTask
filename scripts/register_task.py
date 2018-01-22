@@ -1,45 +1,50 @@
-import os
 import json
+import click
 from gbdxtools import Interface
-import inspect
-from psma_process import psma_tools as tools
-import simplepaths
-local_path = simplepaths.fixpaths('pabst', inspect.currentframe())
-
-# Load default params
-default_params = tools.read_params(os.path.join(local_path, 'default_params.json'))
-
-# Task definition file
-task_definition_fp = 'gbdx_tasks/CloudOptimizedGeoTIFF/register-task.json'
-
-# Create the interface instance
-gbdx = Interface(
-    username=default_params['gbdx']['username'],
-    password=default_params['gbdx']['password'],
-    client_id=default_params['gbdx']['client_id'],
-    client_secret=default_params['gbdx']['client_secret']
-)
-
-# # Register the task
-gbdx.task_registry.delete('CloudOptimizedGeoTIFF:0.1.2')
-gbdx.task_registry.register(json_filename=task_definition_fp)
-
-# # Update the task
-# with open(task_definition_fp, 'r') as task_def:
-#     task_json = json.load(task_def)
-#
-# gbdx.task_registry.update(
-#     task_name='CloudOptimizedGeoTIFF',
-#     task_json=task_json
-# )
 
 
-# Test out the task
-try:
-    cloud_geotiff_task = gbdx.Task('CloudOptimizedGeoTIFF')
-except AttributeError:
-    print('Not created yet')
+@click.command()
+@click.argument('task_definition', type=click.Path(exists=True, writable=True, dir_okay=False, resolve_path=True))
+@click.option('--version', default=None, help='The task version to deploy. If not provided, defaults to the current version in the task definition.')
+def register_task(task_definition, version):
+    """Register this task with GBDX using the provided version."""
 
-cloud_geotiff_task.definition
+    # Create the interface instance
+    gbdx = Interface()
+    print('Created GBDX Interface instance')
+
+    # Write the new version, if present
+    if version is not None:
+        print('Writing new version {version} to {task_definition}'.format(version=version, task_definition=task_definition))
+        with open(task_definition, 'rb') as f:
+            definition = json.load(f)
+        definition['version'] = version
+        with open(task_definition, 'wb') as f:
+            json.dump(definition, f)
+
+    # Load the (possibly updated) definition
+    print('Loading task definition from {task_definition}'.format(task_definition=task_definition))
+    with open(task_definition, 'rb') as f:
+        definition = json.load(f)
+
+    # Construct the full task name with version
+    version = definition['version']
+    task_name = definition['name']
+    full_name = '{task_name}:{version}'.format(task_name=task_name, version=version)
+
+    # If the task is already present, delete it
+    if full_name in gbdx.task_registry.list():
+        print('Deleting existing task {full_name}'.format(full_name=full_name))
+        gbdx.task_registry.delete(full_name)
+
+    print('Registering task {full_name}'.format(full_name=full_name))
+    response = gbdx.task_registry.register(task_json=definition)
+
+    if str(response) == '{full_name} has been submitted for registration':
+        print(response)
+    else:
+        print(response)
 
 
+if __name__ == '__main__':
+    register_task()
