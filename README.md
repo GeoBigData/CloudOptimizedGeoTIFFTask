@@ -5,7 +5,10 @@ This task creates a Cloud Optimized GeoTIFF from a standard GeoTIFF input image.
 
 # Dependencies
 
-* GDAL v2.2.0
+* Docker
+* Python 2.7
+    * [DigitalGlobe/gbdxtools](https://github.com/DigitalGlobe/gbdxtools)
+    * [GeoBigData/gbdx_task_interface](https://github.com/GeoBigData/gbdx-task-interface)
 
 # Build Docker Image
 
@@ -44,4 +47,18 @@ Note: This will also mount all python code in the current directory to `/src/*.p
 
 # Register Task
 
-Make any necessary changes to [register-task.json](./register-task.json) and run [register_task.py](./register_task.py) to register the task on the GBDX platform.
+1) Make any necessary changes to [./src/task-definition.json](./src/task-definition.json)
+2) Run utility to register task:
+
+```shell
+$ python ./scripts/register_task.py --help
+Usage: register_task.py [OPTIONS] TASK_DEFINITION
+
+  Register this task with GBDX using the provided version.
+
+Options:
+  --version TEXT  The task version to deploy. If not provided, defaults to the
+                  current version in the task definition.
+  --help          Show this message and exit.
+
+```
