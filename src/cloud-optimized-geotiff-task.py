@@ -10,6 +10,10 @@ from gbdx_task_interface import GbdxTaskInterface
 
 class CloudOptimizedGeoTIFFTask(GbdxTaskInterface):
 
+    def __init__(self, *args, **kwargs):
+        super(CloudOptimizedGeoTIFFTask, self).__init__(*args, **kwargs)
+        mkdir(self.output_path)
+
     @staticmethod
     def get_band_count(img):
         cmd = 'gdalinfo {img} | grep "Band \d" | wc -l'.format(img=img)

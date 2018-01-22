@@ -10,19 +10,24 @@ This task creates a Cloud Optimized GeoTIFF from a standard GeoTIFF input image.
 # Build Docker Image
 
 ```bash
-docker build -t cloud-optimized-geotiff:0.1.3 -f Dockerfile .
+docker build -t cloud-optimized-geotiff:<version> -f ./src/Dockerfile ./src
 ```
 
 # Publish Docker Image
 
 ```bash
-docker tag gbdx:cloud-optimized-geotiff <your_username>/gbdx:cloud-optimized-geotiff
-docker push <your_username>/gbdx:cloud-optimized-geotiff
+# Push versioned image
+docker tag cloud-optimized-geotiff:0.2.1 jonduckworthdg/cloudoptimizedgeotiff:0.2.1
+docker push jonduckworthdg/cloudoptimizedgeotiff:0.2.1
+
+# Push latest image
+docker tag cloud-optimized-geotiff:0.2.1 jonduckworthdg/cloudoptimizedgeotiff:latest
+docker push jonduckworthdg/cloudoptimizedgeotiff:latest
 ```
 
 # Testing
 
-1. Create a `test-data` folder with the following subfolders:
+1. Create a `test/data` folder with the following subfolders:
     * `input`
     * `output`
 2. Place a standard GeoTIFF file in `test-data/input`
