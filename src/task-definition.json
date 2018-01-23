@@ -10,6 +10,7 @@
            "required": false,
             "type": "string",
             "description": "A comma-separated list of image files to be processed.",
+            "dataType": "list",
             "name": "images"
         }
     ],
@@ -25,12 +26,12 @@
         "type": "DOCKER",
         "command": "python cloud-optimized-geotiff-task.py",
         "properties": {
-            "image": "jonduckworthdg/cloudoptimizedgeotiff:0.2.1"
+            "image": "jonduckworthdg/cloudoptimizedgeotiff:0.2.0"
         }
     }],
     "name": "CloudOptimizedGeoTIFF",
-    "version": "0.2.1",
-    "description": "Generates a Cloud Optimized GeoTIFF from a standard GeoTIFF using GDAL v2.2.3 that is validated using the GDAL validation script at https://svn.osgeo.org/gdal/trunk/gdal/swig/python/samples/validate_cloud_optimized_geotiff.py. If the task fails to generate a valid Cloud Optimized Geotiff, it will create a log file named <image_id>.error.log in the output directory.",
+    "version": "0.2.0",
+    "description": "Generates a Cloud Optimized GeoTIFF from a standard GeoTIFF using GDAL v2.2.3 that is validated using the GDAL validation script at https://svn.osgeo.org/gdal/trunk/gdal/swig/python/samples/validate_cloud_optimized_geotiff.py.",
     "properties": {
         "isPublic": true,
         "timeout": 36000
