@@ -3,16 +3,11 @@ from subprocess import check_output, CalledProcessError
 from os import path, mkdir
 import string
 from validate import validate as validate_geotiff, ValidateCloudOptimizedGeoTIFFException
-import json
 from glob import glob
 from gbdx_task_interface import GbdxTaskInterface
 
 
 class CloudOptimizedGeoTIFFTask(GbdxTaskInterface):
-
-    def __init__(self, *args, **kwargs):
-        super(CloudOptimizedGeoTIFFTask, self).__init__(*args, **kwargs)
-        mkdir(self.output_path)
 
     @staticmethod
     def get_band_count(img):
@@ -21,6 +16,11 @@ class CloudOptimizedGeoTIFFTask(GbdxTaskInterface):
         return int(response.strip())
 
     def invoke(self):
+        # Get/create output data directory
+        output_dir = self.get_output_data_port('data')
+        if not path.exists(output_dir):
+            mkdir(output_dir)
+
         input_images = glob(path.join(self.input_path, '**.tif'))
         input_images += glob(path.join(self.input_path, '**.TIF'))
 
@@ -35,7 +35,7 @@ class CloudOptimizedGeoTIFFTask(GbdxTaskInterface):
                     raise IOError('File %s does not exist in input directory' % basename)
 
                 # Construct the filepath for the output optimized GeoTIFF
-                out_fp = path.join(self.output_path, basename)
+                out_fp = path.join(output_dir, basename)
 
                 # Create the raster overview
                 overview_cmd = 'gdaladdo -r average %s 2 4 8 16 32' % img_fp
