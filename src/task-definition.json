@@ -3,15 +3,8 @@
         {
             "required": true,
             "type": "directory",
-            "description": "The directory containing GeoTIFF images to be converted.",
+            "description": "The directory containing GeoTIFF images to be converted. The task will walk the tree under this directory and attempt to convert any *.tif and *.TIF files. The directory structure for any converted images will be maintained in the outputs.",
             "name": "data"
-        },
-        {
-           "required": false,
-            "type": "string",
-            "description": "A comma-separated list of image files to be processed.",
-            "dataType": "list",
-            "name": "images"
         }
     ],
     "outputPortDescriptors": [
@@ -24,7 +17,7 @@
     ],
     "containerDescriptors": [{
         "type": "DOCKER",
-        "command": "python cloud-optimized-geotiff-task.py",
+        "command": "python cloud_optimized_geotiff_task.py",
         "properties": {
             "image": "jonduckworthdg/cloudoptimizedgeotiff:0.2.0"
         }

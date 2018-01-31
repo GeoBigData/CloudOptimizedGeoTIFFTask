@@ -68,11 +68,6 @@ RUN ./configure \
     make && \
     make install
 
-COPY .gitcredentials /usr/local/.gitcredentials
-RUN git config --global credential.helper 'store --file /usr/local/.gitcredentials'
-RUN yes | pip install --upgrade pip
-RUN yes | pip install git+https://github.com/GeoBigData/gbdx-task-interface.git
-
 # Create the input and output directories
 RUN mkdir /mnt/work && \
     mkdir /mnt/work/input && \
@@ -80,7 +75,8 @@ RUN mkdir /mnt/work && \
 
 # Copy source code
 COPY /*.py /src/
+COPY task-definition.json /src/task-definition.json
 
 WORKDIR /src
 
-CMD 'python cloud-optimized-geotiff-task.py'
+CMD 'python cloud_optimized_geotiff_task.py'
