@@ -5,12 +5,6 @@
             "type": "directory",
             "description": "The directory containing GeoTIFF images to be converted.",
             "name": "data"
-        },
-        {
-           "required": false,
-            "type": "string",
-            "description": "A comma-separated list of image files to be processed.",
-            "name": "images"
         }
     ],
     "outputPortDescriptors": [
@@ -23,14 +17,14 @@
     ],
     "containerDescriptors": [{
         "type": "DOCKER",
-        "command": "python cloud-optimized-geotiff-task.py",
+        "command": "sh -e \"/usr/src/app/create-cloud-optimized-geotiffs.sh\"",
         "properties": {
-            "image": "jonduckworthdg/cloudoptimizedgeotiff:0.2.1"
+            "image": "jonduckworthdg/cloudoptimizedgeotiff:1.0.4"
         }
     }],
     "name": "CloudOptimizedGeoTIFF",
-    "version": "0.2.1",
-    "description": "Generates a Cloud Optimized GeoTIFF from a standard GeoTIFF using GDAL v2.2.3 that is validated using the GDAL validation script at https://svn.osgeo.org/gdal/trunk/gdal/swig/python/samples/validate_cloud_optimized_geotiff.py. If the task fails to generate a valid Cloud Optimized Geotiff, it will create a log file named <image_id>.error.log in the output directory.",
+    "version": "1.0.4",
+    "description": "Generates a Cloud Optimized GeoTIFF from a standard GeoTIFF using GDAL v2.2.0. The task succeeds if any Cloud Optimized GeoTIFFs are written to the output directory, even if some fail.",
     "properties": {
         "isPublic": true,
         "timeout": 36000

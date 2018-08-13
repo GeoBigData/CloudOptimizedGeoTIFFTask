@@ -1,9 +1,0 @@
-version: '2'
-services:
-  test:
-    image: "cloud-optimized-geotiff:latest"
-    volumes:
-      - ./test-data/input:/mnt/work/input:rw
-      - ./test-data/output:/mnt/work/output:rw
-      - .:/src:rw
-    command: 'python cloud-optimized-geotiff-task.py'
