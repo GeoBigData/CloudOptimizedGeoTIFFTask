@@ -1,0 +1,8 @@
+version: '2'
+services:
+  test:
+    image: "cloudoptimizedgeotiff:latest"
+    volumes:
+      - ./test/data/input:/mnt/work/input:rw
+      - ./test/data/output:/mnt/work/output:rw
+    command: 'python cloud_optimized_geotiff_task.py'
