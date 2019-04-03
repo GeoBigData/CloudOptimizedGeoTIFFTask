@@ -8,14 +8,11 @@
 # Last Updated:
 #
 # Description:
-# Bash script to be used in the 'cloudoptimizedgeotiff'
-# GBDX task to create Cloud Optimized GeoTIFFs from a
-# directory of input tifs. The script will find all
-# .tif or .TIF files in all subdirectories of the GBDX
-# task input mount and attempt to convert to Cloud
-# Optimized GeoTIFFs.
+# Bash script to be used in the 'cloudoptimizedgeotiff' GBDX task to create Cloud Optimized GeoTIFFs from a
+# directory of input tifs. The script will find all .tif or .TIF files in all subdirectories of the GBDX
+# task input mount and attempt to convert to Cloud-Optimized GeoTIFFs.
 #
-# If any Cloud Optimized GeoTIFFs are
+# If any Cloud-Optimized GeoTIFFs are
 # successfully created, the task succeeds.
 ############################################
 
@@ -33,7 +30,9 @@ get_band_count() {
     ############################################
     local temp_tif=$1;
 
-    band_count=$(gdalinfo ${temp_tif} | grep "^Band [[:digit:]]\+" | wc -l);
+    local band_count=$(gdalinfo ${temp_tif} | grep "^Band [[:digit:]]\+" | wc -l);
+
+    echo ${local};
 }
 
 # List tif files in input data directory
@@ -43,7 +42,8 @@ all_tifs=$(find ${INDIR} -type f | grep "\.[tT][iI][fF]$");
 for tif in ${all_tifs};
 do
     # Get number of bands
-    get_band_count ${tif};
+    band_count=$(get_band_count ${tif});
+
     # Parse the basename (filename without the input data directory prefix
     # (e.g. /mnt/work/input/data/subdirectory/my.tif -> subdirectory/my.tif)
     basename=$(echo ${tif} | sed "s~${INDIR}/\(.*\.[tT][iI][fF]\)$~\1~");
@@ -55,7 +55,7 @@ do
         photometric_option="-co PHOTOMETRIC=YCBCR";
         compress_option="-co COMPRESS=JPEG";
     else
-        # If image is not 3-band, use less optimal LZW compression
+        # If image is not 3-band, use less optimal LZW compression (better interoperability than DEFLATE)
         compress_option="-co COMPRESS=LZW";
     fi
 
