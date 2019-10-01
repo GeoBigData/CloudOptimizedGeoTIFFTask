@@ -15,7 +15,7 @@ ingest = gbdx.Task(
 )
 
 cog = gbdx.Task(
-    'CloudOptimizedGeoTIFF:2.0.0',
+    'CloudOptimizedGeoTIFF:2.0.1',
     data=ingest.outputs.data.value,
 )
 

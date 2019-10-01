@@ -5,6 +5,7 @@ import rasterio
 
 SUPPORTED_RASTER_EXTENSIONS = (
     '.tif',
+    '.vrt',
 )
 
 # specify input paths

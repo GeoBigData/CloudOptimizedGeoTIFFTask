@@ -15,12 +15,12 @@
         "type": "DOCKER",
         "command": "",
         "properties": {
-            "image": "jonduckworthdg/cloudoptimizedgeotiff:2.0.0"
+            "image": "jonduckworthdg/cloudoptimizedgeotiff:2.0.1"
         }
     }],
     "description": "Task to create Cloud-Optimized GeoTIFFs using rio-cogeo",
     "name": "CloudOptimizedGeoTIFF",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "taskOwnerEmail": "jon.duckworth@digitalglobe.com",
     "properties": {
         "isPublic": true,
