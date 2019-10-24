@@ -1,6 +1,7 @@
 import subprocess
 import os
 
+from gbdx_task_interface import GbdxTaskInterface
 import rasterio
 
 SUPPORTED_RASTER_EXTENSIONS = (
@@ -8,47 +9,56 @@ SUPPORTED_RASTER_EXTENSIONS = (
     '.vrt',
 )
 
-# specify input paths
-in_path = '/mnt/work/input'
-out_path = '/mnt/work/output'
 
-in_data_path = os.path.join(in_path, 'data')
-out_data_path = os.path.join(out_path, 'data')
+class CreateCOG(GbdxTaskInterface):
 
-if __name__ == '__main__':
+    def determine_profile(self, bands, dtype):
+        port_profile = self.get_input_string_port('profile')
+        if port_profile:
+            print(f'Using user provided profile "{port_profile}"')
+            return port_profile
+        if bands == 3 and dtype == 'uint8':
+            return 'jpeg'
+        return 'deflate'
 
-    if not os.path.exists(out_data_path):
-        os.makedirs(out_data_path)
+    def create_cog(self, fp):
+        print(f'Processing image {fp}')
 
-    # Grab all rasters in the input directory
-    input_filepaths = [
-        os.path.join(in_data_path, filename)
-        for filename in os.listdir(in_data_path)
-        if os.path.splitext(filename)[1].lower() in SUPPORTED_RASTER_EXTENSIONS
-    ]
+        out_data_path = self.get_output_data_port('data')
 
-    for input_path in input_filepaths:
-        with rasterio.open(input_path) as src:
+        with rasterio.open(fp) as src:
             band_count = src.count
             data_type = src.dtypes[0]
 
-        file_basename = os.path.basename(input_path)
-        out_file = os.path.join(out_data_path, file_basename)
+        cog_profile = self.determine_profile(band_count, data_type)
+        print(f'(bands: {band_count}, dtype: {data_type}) => profile: {cog_profile}')
 
-        # Determine the profile
-        if band_count == 3 and data_type == 'uint8':
-            profile = 'jpeg'
-        elif band_count in [3, 4] and data_type == 'uint8':
-            profile = 'webp'
-        else:
-            profile = 'lzw'
+        file_basename = os.path.basename(fp)
+        out_file = os.path.join(out_data_path, file_basename)
 
         os.environ['CHECK_DISK_FREE_SPACE'] = 'FALSE'
         subprocess.run(
-            'rio cogeo create {input_path} {out_file} --cog-profile {profile}'.format(
-                out_file=out_file,
-                input_path=input_path,
-                profile=profile,
-            ),
+            f'rio cogeo create {fp} {out_file} --cog-profile {cog_profile} --add-mask --overview-resampling bilinear --resampling bilinear --threads 16',
             shell=True,
         )
+
+    def invoke(self):
+
+        out_data_path = self.get_output_data_port('data')
+        os.makedirs(out_data_path, exist_ok=True)
+
+        # Grab all rasters in the input directory
+        in_data_path = self.get_input_data_port('data')
+        input_filepaths = [
+            os.path.join(in_data_path, filename)
+            for filename in os.listdir(in_data_path)
+            if os.path.splitext(filename)[1].lower() in SUPPORTED_RASTER_EXTENSIONS
+        ]
+
+        for input_path in input_filepaths:
+            self.create_cog(input_path)
+
+
+if __name__ == '__main__':
+    with CreateCOG() as task:
+        task.invoke()

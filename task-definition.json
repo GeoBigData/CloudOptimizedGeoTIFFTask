@@ -4,6 +4,11 @@
         "description": "Directory containing GeoTIFF images to be converted to Cloud-Optimized GeoTIFF.",
         "name": "data",
         "type": "directory"
+    }, {
+        "required": false,
+        "description": "A valid rio-cogeo profile string (https://github.com/cogeotiff/rio-cogeo#default-cogeo-profiles). If not provided, will use the band count and data type to determine the best profile.",
+        "name": "profile",
+        "type": "string"
     }],
     "outputPortDescriptors": [{
         "required": true,
@@ -15,12 +20,12 @@
         "type": "DOCKER",
         "command": "",
         "properties": {
-            "image": "jonduckworthdg/cloudoptimizedgeotiff:2.0.1"
+            "image": "jonduckworthdg/cloudoptimizedgeotiff:3.0.0"
         }
     }],
     "description": "Task to create Cloud-Optimized GeoTIFFs using rio-cogeo",
     "name": "CloudOptimizedGeoTIFF",
-    "version": "2.0.1",
+    "version": "3.0.0",
     "taskOwnerEmail": "jon.duckworth@digitalglobe.com",
     "properties": {
         "isPublic": true,
